@@ -1,4 +1,4 @@
-# Chompy Hunter [![](https://img.shields.io/endpoint?url=https://i.pluginhub.info/shields/installs/plugin/chompy-hunter)](https://runelite.net/plugin-hub)
+# Chompy Hunter [![](https://img.shields.io/endpoint?url=https://api.runelite.net/pluginhub/shields/installs/plugin/chompy-hunter)](https://runelite.net/plugin-hub/)
 Improves chompy bird hunting.
 
 -Relaunch of version ejedev/chompy-hunter
