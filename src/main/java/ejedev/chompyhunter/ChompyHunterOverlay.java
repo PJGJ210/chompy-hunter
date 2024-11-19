@@ -35,21 +35,29 @@ public class ChompyHunterOverlay extends Overlay {
     {
         for (Chompy chompy : plugin.getChompies().values())
         {
-            Shape objectClickbox = chompy.getNpc().getConvexHull();
+            NPC npc = chompy.getNpc();
+            // player walks away, npc despawns, no longer need to draw chompy until respawned
+            if (npc == null) {
+                continue;
+            }
+            Shape objectClickbox = npc.getConvexHull();
             long timeLeft = Duration.between(Instant.now(), chompy.getSpawnTime()).getSeconds();
             String timeLeftFormatted = timeLeft + "";
             Color color = Color.GREEN;
-            if(timeLeft < 30 && timeLeft > 15) {
+            if(timeLeft <= 30 && timeLeft > 15) {
                 color = Color.ORANGE;
             }
-            else if(timeLeft<= 15) {
+            else if(timeLeft <= 15 && timeLeft >= 0) {
                 color = Color.RED;
+            } else if (timeLeft < 0) {
+                plugin.getChompies().remove(npc.getIndex());
+                continue;
             }
-            if (chompy.getNpc().getName() != null && chompy.getNpc().getId() == 1475 && timeLeft > -1)
+            if (npc.getId() == ChompyHunterPlugin.LIVE_CHOMPY_ID)
             {
                 renderPoly(graphics, color, objectClickbox);
-                String npcName = Text.removeTags(chompy.getNpc().getName());
-                Point textLocation = chompy.getNpc().getCanvasTextLocation(graphics, npcName, chompy.getNpc().getLogicalHeight() + 40);
+                String npcName = Text.removeTags(npc.getName());
+                Point textLocation = npc.getCanvasTextLocation(graphics, npcName, npc.getLogicalHeight() + 40);
                 if (textLocation != null)
                 {
                     OverlayUtil.renderTextLocation(graphics, textLocation, timeLeftFormatted, color);

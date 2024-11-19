@@ -2,28 +2,25 @@ package ejedev.chompyhunter;
 import com.google.inject.Provides;
 import lombok.AccessLevel;
 import lombok.Getter;
-import net.runelite.api.ChatMessageType;
-import net.runelite.api.Player;
+import net.runelite.api.*;
 import net.runelite.api.coords.WorldPoint;
-import net.runelite.api.events.GameTick;
-import net.runelite.api.events.NpcDespawned;
+import net.runelite.api.events.*;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import javax.inject.Inject;
 import net.runelite.client.eventbus.Subscribe;
-import net.runelite.api.events.NpcSpawned;
-import net.runelite.api.NPC;
-import net.runelite.api.Client;
 import net.runelite.client.ui.overlay.OverlayManager;
+
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-import net.runelite.api.events.ChatMessage;
+
 import net.runelite.client.Notifier;
 
 @PluginDescriptor(
@@ -40,6 +37,8 @@ public class ChompyHunterPlugin extends Plugin{
     @Inject
     private ChompyHunterConfig config;
 
+    static final int LIVE_CHOMPY_ID = 1475;
+    static final int DEAD_CHOMPY_ID = 1476;
     static final String AUTO_HIDE_KEY = "autoHide";
     private static final Pattern Chompy_KC_REGEX = Pattern.compile("You've scratched up a total of.*");
 
@@ -150,26 +149,47 @@ public class ChompyHunterPlugin extends Plugin{
             return;
         }
 
-        String name = event.getNpc().getName();
-
-        if (name != null) {
-            if (name.equals("Chompy bird") && !chompies.containsKey(npc.getIndex())) {
+        int npcId = event.getNpc().getId();
+        if (npcId == LIVE_CHOMPY_ID) {
+            if (!chompies.containsKey(npc.getIndex())) {
+                // new chompy
                 chompies.put(npc.getIndex(), new Chompy(npc));
                 if (config.notifyChompySpawn()) {
                     notifier.notify("A chompy has spawned!");
                 }
+            } else {
+                // replace old chompy with new npc since you walked away and despawned
+                Chompy chompy = chompies.get(npc.getIndex());
+                Instant oldStartTime = chompy.getSpawnTime();
+                Chompy newChompy = new Chompy(npc);
+                newChompy.setSpawnTime(oldStartTime);
+                chompies.put(npc.getIndex(), newChompy);
             }
+        }
+    }
+
+    @Subscribe
+    private void onNpcChanged(NpcChanged event)
+    {
+        NPC npc = event.getNpc();
+        int npcId = event.getNpc().getId();
+        if (npcId == DEAD_CHOMPY_ID && chompies.containsKey(npc.getIndex())) {
+            // remove chompy when killed
+            chompies.remove(event.getNpc().getIndex());
         }
     }
 
    @Subscribe
     private void onNpcDespawned(NpcDespawned event)
     {
+        // chompy ran of out time or player walked away
         NPC npc = event.getNpc();
-        String name = event.getNpc().getName();
-        if (name != null) {
-            if (name.equals("Chompy bird") && chompies.containsKey(npc.getIndex())) {
-                chompies.remove(event.getNpc().getIndex());
+        int npcId = event.getNpc().getId();
+        if (npcId == LIVE_CHOMPY_ID && chompies.containsKey(npc.getIndex())) {
+            Chompy chompy = chompies.get(npc.getIndex());
+            long timeLeft = Duration.between(Instant.now(), chompy.getSpawnTime()).getSeconds();
+            if (timeLeft < 0) {
+                chompies.remove(npc.getIndex());
             }
         }
     }
@@ -203,6 +223,7 @@ public class ChompyHunterPlugin extends Plugin{
                 StartTime = null;
                 PluginTimeout = null;
                 panelEnabled = false;
+                chompies.clear();
             }
 
             lastRegionId = regionId;
