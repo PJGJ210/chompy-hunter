@@ -37,8 +37,8 @@ public class ChompyHunterPlugin extends Plugin{
     @Inject
     private ChompyHunterConfig config;
 
-    static final int LIVE_CHOMPY_ID = 1475;
-    static final int DEAD_CHOMPY_ID = 1476;
+    static final int LIVE_CHOMPY_ID = NpcID.CHOMPY_BIRD;
+    static final int DEAD_CHOMPY_ID = NpcID.CHOMPY_BIRD_1476;
     static final String AUTO_HIDE_KEY = "autoHide";
     private static final Pattern Chompy_KC_REGEX = Pattern.compile("You've scratched up a total of.*");
 
