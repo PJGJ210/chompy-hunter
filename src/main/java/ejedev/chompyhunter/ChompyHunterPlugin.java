@@ -115,7 +115,7 @@ public class ChompyHunterPlugin extends Plugin{
 
     public boolean getPanelEnabled()
     {
-        return panelEnabled;
+        return (!config.hideAlways() && panelEnabled);
     }
 
     @Subscribe

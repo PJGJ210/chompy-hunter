@@ -8,10 +8,20 @@ import net.runelite.client.config.ConfigItem;
 public interface ChompyHunterConfig extends Config
 {
     @ConfigItem(
+            keyName = "hideAlways",
+            name = "Hide Panel",
+            description = "Hides information panel but keeps highlights",
+            position = 1
+    )
+    default boolean hideAlways()
+    {
+        return false;
+    }
+    @ConfigItem(
             keyName = "notifyChompy",
             name = "Notify on spawn",
             description = "Sends a notification when a chompy spawns",
-            position = 1
+            position = 2
     )
     default boolean notifyChompySpawn()
     {
@@ -21,19 +31,19 @@ public interface ChompyHunterConfig extends Config
         keyName = "autoHide",
         name = "Autohide",
         description = "Hide plugin when not in Castle Wars or Feldip Hiills regions",
-        position = 2
+        position = 3
     )
-default boolean autoHide()
+    default boolean autoHide()
 {
     return true;
 }
-@ConfigItem(
+    @ConfigItem(
         keyName = "autoHideTimeout",
         name = "Autohide Timeout",
         description = "Timeout in seconds when leaving region",
-        position = 3
-)
-default int autoHideTimeout()
+        position = 4
+    )
+    default int autoHideTimeout()
 {
     return 60;
 }
